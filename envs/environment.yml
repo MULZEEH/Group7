@@ -1,0 +1,16 @@
+name: group7
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+dependencies:
+  - python=3.12
+  - numpy
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - jupyterlab
+  - biopython
+  - snakemake
+  - pip
