@@ -1,0 +1,10 @@
+# Configuration file for the bacterial genomics pipeline
+
+# CheckM2 database path
+checkm2_db_path: "/data/checkm2/database"
+# threads: 8
+# output_dir: "results"
+# mag_input_dir: "/data/mags"
+# threshold_completeness: 95
+# threshold_contamination: 5
+# ...

@@ -1,0 +1,11 @@
+name: QC-environment
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+dependencies:
+  - python=3.12
+  # - numpy
+  # - pandas
+  - checkm2
+  # - pip

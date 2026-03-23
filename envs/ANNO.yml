@@ -1,0 +1,11 @@
+name: annotation-environment
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+dependencies:
+  - python=3.12
+  - numpy
+  - pandas
+  - prokka
+  - pip
