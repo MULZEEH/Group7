@@ -46,7 +46,7 @@ if [ ! -z "$INPUT_FILE" ]; then
 elif [ ! -z "$INPUT_DIR" ]; then
     echo "Running CheckM on all .fna files in: $INPUT_DIR"
     
-    checkm2 predict --threads 8 --extension fna --input "$TEMP_DIR" --output-directory "$OUTPUT_DIR" --force
+    checkm2 predict --threads 8 --extension fna --input "$INPUT_DIR" --output-directory "$OUTPUT_DIR" --force
 else
     echo "Error: You must provide either a file (-f) or a directory (-d)."
     usage
