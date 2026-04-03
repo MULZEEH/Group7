@@ -212,40 +212,21 @@ rule qc:
         checkm2 database --download
         checkm2 predict --threads 8 --input {input.bins} --output-directory results/checkm2
         # then procede to remove useless junk that has been made by checkm
-        rm -rf results/checkm2/protein_files
         mv -p results/checkm2/*.log log/
         """
 
-# --- STEP 2: Taxonomy Assignment (GTDB-Tk) ---
+# --- STEP 2: Taxonomy Assignment (Phylophlan) ---
 rule taxo:
     input:
-        "data/mags/{sample}.fna"
+        "data/mags/"
     output:
-        "results/taxonomy/{sample}_classification.tsv"
+        "results/taxonomy/taxonomy_report.tsv"
     shell:
-        # "gtdbtk classify_wf --genome_dir data/mags/ --out_dir results/taxonomy/ --cpus 8 --extension fasta"
         """
         phylophlan_metagenomics -i data/mags/ -d results/taxonomy -o results/taxonomy/ --nproc 8
         """
 
 # --- STEP 3: Annotation (Prokka) ---
-
-# rule anno:
-#     input:
-#         "data/mags"
-#     output:
-#         "results/done.txt"
-#         # "results/annotations/{sample}/{sample}.gff"
-#         # "results/annotations/{sample}/{sample}.gff"
-#     # params:
-#     #     outdir = "results/annotations/{sample}"
-#     conda:
-#         "envs/ANNO.yml"
-#     shell:
-#         "./scripts/Anno/marco.sh"
-        # """
-        # prokka --outdir {params.outdir} --prefix {wildcards.sample} {input} --force --centre X --compliant
-        # """
 
 rule new_anno:
     input:
