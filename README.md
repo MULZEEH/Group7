@@ -48,6 +48,17 @@ Our goal is to characterize a specific SGB consisting of **30 MAGs** recovered f
 | **5. Phylogeny** | `PhyloPhlAn``IQ-TREE 2` | Construct a high-resolution evolutionary tree. |
 | **6. Statistics** | `python` / `R` | Perform Linear Regression/ANOVA to link metadata to microbial features. |
 
+## Pipeline Summary
+
+| Step | What this needs | What this gives us | Why? |
+| :--- | :--- | :--- | :--- |
+| **1. QC** | MAGs (FASTA) | Completeness/Contamination % | To ensure data reliability. |
+| **2. Taxonomy** | Clean MAGs (FASTA) | Taxonomic ranks (Genus/Species) | To identify the organism. |
+| **3. Annotation** | Clean MAGs (FASTA) | Gene labels (GFF/GBK) | To see metabolic potential. |
+| **4. Pangenome** | Annotation files (GFF) | Gene Presence/Absence Matrix | To find shared vs. unique traits. |
+| **5. Phylogeny** | Gene Alignments | Evolutionary Tree (.nwk) | To map evolutionary history. |
+| **6. Metadata** | Results + Host CSV | Statistical Correlations | To link genes to the environment. |
+
 ---
 
 ## 5. Administrative Details
@@ -61,7 +72,7 @@ Our goal is to characterize a specific SGB consisting of **30 MAGs** recovered f
 * **Why QC on Fasta?** Even after assembly, a MAG might be "dirty" (containing DNA from multiple species) or "incomplete." We must verify its quality before trusting pangenome results.
 * **Removing Human DNA?** Yes. In oral samples, human DNA can dominate. Removing it ensures we are analyzing microbial signals, not host contamination.
 * **How can I have 1 MAG per sample?** Binning algorithms group contigs belonging to one species into one "bin." This MAG represents the specific strain of that species found in that specific patient.
-* **Metadata Correlation:** We use **MaAsLin2** to see if the abundance of specific genes or taxa is significantly correlated with "Smoking" or "Peri-implantitis" while adjusting for "Age" and "Sex."
+* **Metadata Correlation:** We use **MaAsLin2** to see if the abundance of specific genes is significantly correlated with "Smoking" or "Peri-implantitis" while adjusting for "Age" and "Sex."
 
 ---
 
@@ -81,3 +92,9 @@ Our goal is to characterize a specific SGB consisting of **30 MAGs** recovered f
 ### Shared
 * Metadata correlation analysis (MaAsLin2/R)
 * Report writing and slide preparation
+
+### Dialister Invisus Information and Idea
+* anaerobic
+* opportunistic pathogen 
+* question to be asked is, does the pangenome change dependantly of the status of the patient? 2988 H, 3016 M, 2830 P.
+* Marker to be answered in the question

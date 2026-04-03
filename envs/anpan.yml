@@ -1,0 +1,74 @@
+name: anpan_pglmm
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  # R base
+  - r-base=4.3.3
+  - r-essentials
+
+  # Build tools needed for cmdstan / R package compilation
+  - make
+  - gcc
+  - gxx
+  - gfortran
+
+  # GNU MPFR (sometimes needed for CmdStan on servers)
+  - mpfr
+
+  # Core R packages available on conda-forge
+  - r-ape
+  - r-data.table
+  - r-dplyr
+  - r-fastglm
+  - r-furrr
+  - r-future
+  - r-ggdendro
+  - r-ggnewscale
+  - r-ggplot2
+  - r-loo
+  - r-patchwork
+  - r-phylogram
+  - r-posterior
+  - r-progressr
+  - r-purrr
+  - r-r.utils
+  - r-remotes
+  - r-stringr
+  - r-tibble
+  - r-tidyselect
+  - r-cli
+  - r-devtools
+
+  # Python (needed internally by CmdStan build system)
+  - python>=3.9
+
+  # pip fallback for anything missing
+  - pip
+
+  - pip:
+      []  # placeholder; cmdstanr is installed via R (see README below)
+  # Set this to avoid cmdstanr trying to use RTools on Windows
+  # (which will fail since RTools is not a full build environment)
+  # Note: insert here ur own GitHub PAT if you want to install anpan from GitHub in the post-activation steps below
+
+# ─────────────────────────────────────────────────────────────────────────────
+# POST-ACTIVATION STEPS (run these once after `conda activate anpan_pglmm`)
+#
+# 1. Install cmdstanr (not on conda):
+#    Rscript -e "install.packages('cmdstanr',
+#                 repos = c('https://mc-stan.org/r-packages/', getOption('repos')))"
+#
+# 2. Install CmdStan itself:
+#    Rscript -e "cmdstanr::check_cmdstan_toolchain(fix = TRUE)"
+#    Rscript -e "cmdstanr::install_cmdstan(cores = 4)"
+#
+# 3. Install anpan from GitHub:
+#    Rscript -e "remotes::install_github('biobakery/anpan', build_vignettes = FALSE)"
+#
+# Optionally build vignettes (slow):
+#    Rscript -e "remotes::install_github('biobakery/anpan', build_vignettes = TRUE)"
+# ─────────────────────────────────────────────────────────────────────────────
+variables:
+  GITHUB_PATH: "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"

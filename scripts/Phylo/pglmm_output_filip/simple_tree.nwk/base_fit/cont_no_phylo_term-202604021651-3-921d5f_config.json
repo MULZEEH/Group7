@@ -1,0 +1,66 @@
+
+{
+  "stan_major_version" : "2",
+  "stan_minor_version" : "38",
+  "stan_patch_version" : "0",
+  "model_name" : "cont_no_phylo_term_model",
+  "start_datetime" : "2026-04-02 14:51:26 UTC",
+  "method" : {
+    "value" : "sample",
+    "sample" : {
+      "num_samples" : 1000,
+      "num_warmup" : 1000,
+      "save_warmup" : false,
+      "thin" : 1,
+      "adapt" : {
+        "engaged" : true,
+        "gamma" : 0.05,
+        "delta" : 0.95,
+        "kappa" : 0.75,
+        "t0" : 10,
+        "init_buffer" : 75,
+        "term_buffer" : 50,
+        "window" : 25,
+        "save_metric" : true
+      },
+      "algorithm" : {
+        "value" : "hmc",
+        "hmc" : {
+          "engine" : {
+            "value" : "nuts",
+            "nuts" : {
+              "max_depth" : 12
+            }
+          },
+          "metric" : {
+            "value" : "diag_e"
+          },
+          "metric_file" : "",
+          "stepsize" : 1,
+          "stepsize_jitter" : 0
+        }
+      },
+      "num_chains" : 1
+    }
+  },
+  "id" : 3,
+  "data" : {
+    "file" : "\/tmp\/Rtmpu1xK6p\/standata-1674702fdf9975.json"
+  },
+  "init" : "\/tmp\/Rtmpu1xK6p\/init-1674708d7c04e_3.json",
+  "random" : {
+    "seed" : 42
+  },
+  "output" : {
+    "file" : "\/home\/pupu\/Desktop\/Uni\/Genomics\/Bacterial\/Project\/Group7\/scripts\/Phylo\/pglmm_output\/simple_tree.nwk\/base_fit\/cont_no_phylo_term-202604021651-3-921d5f.csv",
+    "diagnostic_file" : "",
+    "refresh" : 200,
+    "sig_figs" : 8,
+    "profile_file" : "\/home\/pupu\/Desktop\/Uni\/Genomics\/Bacterial\/Project\/Group7\/scripts\/Phylo\/pglmm_output\/simple_tree.nwk\/base_fit\/cont_no_phylo_term-profile-202604021651-3-563209.csv",
+    "save_cmdstan_config" : true
+  },
+  "num_threads" : 1,
+  "mpi_enabled" : false,
+  "stanc_version" : "stanc3 v2.38.0",
+  "stancflags" : "--name=cont_no_phylo_term_model"
+}

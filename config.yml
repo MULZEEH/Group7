@@ -1,10 +1,15 @@
 # Configuration file for the bacterial genomics pipeline
 
 # CheckM2 database path
-checkm2_db_path: "/data/checkm2/database"
-# threads: 8
-# output_dir: "results"
-# mag_input_dir: "/data/mags"
-# threshold_completeness: 95
-# threshold_contamination: 5
+# checkm2_db_path: "/data/databases/checkm2" # do the same for phylophlan
+checkm2_db_path: "data/checkm2/database/" # i think i wont haveany more data in checkm2 as in the other tools
+eggnog_db_path: "data/eggNOG/database"
+phylophlan_db_path: "data/phylophlan/database"
+phylophlan_out_dir: "results/phylogeny"
+prokka_out_dir: "results/annotations"
+threads: 8
+output_dir: "results"
+mag_input_dir: "data/mags"
+threshold_completeness: 50
+threshold_contamination: 5
 # ...

@@ -4,34 +4,74 @@
 # 1) QC: First step is to perfrom a QUALITY CHECK on all the MAGs. The QC has been done using CheckM2(or QUAST) tool, 
 #       which provides a comprehensive report on the quality of the MAGs, including completeness, contamination, and other relevant metrics. 
 #       This step ensures that only high-quality MAGs are included in subsequent analyses.
-#       What this needs: 
-#       What this gives us: 
-#       Why:
+#       What this needs: MAGs (FASTA files)
+#       What this gives us: Contamination/Completeness and other useless information
+#       Why:To ensure data reliability (setting filters/analysis as extra 'metadata')
 # 2) Taxonomy Assignment: Secondly GTDB-Tk	( https://doi.org/10.1093/bioinformatics/btz848) or Segata's PhyloPhlAn (https://pubmed.ncbi.nlm.nih.gov/23942190/) 
 #       will be used to assign taxonomy to the MAGs, providing insights into their taxonomic classification and potential ecological roles.
-#       What this needs: 
-#       What this gives us: 
-#       Why:
-# 3) Genome Annotation: Crucial step	Bakta (or Prokka)
-#       What this needs: 
-#       What this gives us: 
-#       Why:	
+#       What this needs: MAGs (FASTA files)
+#       What this gives us: Taxonomic rank -> Genus/Species
+#       Why: Identify the organism for contextualizing the organism genome characteristic
+# 3) Genome Annotation: Crucial step Prokka
+#       What this needs: MAGs (FASTA files)
+#       What this gives us: Annotation files (GFF)
+#       Why: To document metabolic structure
 # 4) Pangenome analysis	(Roary)
+#       What this needs: Annotation files (GFF)
+#       What this gives us: Gene presence/behavior Matrix
+#       Why: To find shared vs Unique traits (pangenome insight)
+# 5) Phylogeny analysis	Phylophlan + tree... -> could be done some /alpha and /beta diversity analysis	
 #       What this needs: 
-#       What this gives us: 
-#       Why:
-# 5) Phylogeny analysis	IQ-TREE 2	
-#       What this needs: 
-#       What this gives us: 
-#       Why:
-# 6) Association with host Metadata	Python (Pandas)	
-#       What this needs: 
-#       What this gives us: 
-#       Why:
+#       What this gives us: Evolutionary Tree (.nwk)
+#       Why: To map evolutionary history
+# 6) Association with host Metadata	( actually runned in all others steps )
+#       What this needs: Previous Results + Metadata CSV file
+#       What this gives us: Statistical Correlation
+#       Why: To give biological meaning between results and sample contextualization
 
+# to hadnle in a clean way the output --verbose 2>&1 | tee -a log.txt # or path to the log file
+
+# snakemake --dag | dot -Tsvg > pipeline_dag.svg
 
 # Load configuration
 configfile: "config.yml"
+import os
+
+# --- Configuration Logic ---
+DO_BACKUP = config.get("backup", False) # RUN also a backup rule after the workflow ended -> probabily gonna remove it
+DO_CORRELATION = config.get("correlation", False) # run also the correlation script
+IS_PLANE = config.get("plane", False)
+KEEP_JUNK = config.get("keep_junk", False)
+
+
+# here has to be updated with the real targets of the pipelines
+# taxonomy -> 
+# quality_control ->
+# annotation ->
+# functional_annotation ->
+# pangenome ->
+# phylogeny ->
+# correlation ->
+standard_targets = ["taxonomy", "quality_control", "annotation", "Pangenome", "phylogeny"]
+if not IS_PLANE:
+    standard_targets.append("functional_annotation")
+if DO_CORRELATION:
+    standard_targets.append("correlation")
+    standard_targets.append("functional_annotation")
+
+
+# --- Handlers for Automatic Cleanup ---
+
+onsuccess:
+    if os.path.exists(".tmp/setup_complete.txt"):
+        os.remove(".tmp/setup_complete.txt")
+    print("Workflow finished successfully. Cleanup complete.")
+
+onerror:
+    if os.path.exists(".tmp/setup_complete.txt"):
+        os.remove(".tmp/setup_complete.txt")
+    print("Workflow failed. Cleanup complete.")
+
 
 # Define MAG samples (IF THE INPUT DATA IS CHANGED THIS LIST NEEDS TO BE UPDATED) -> could be also automitized but for now kept like this to insert some awereness of the user on the matter of data input
 SAMPLES = ["M1076080470",
@@ -65,17 +105,46 @@ SAMPLES = ["M1076080470",
            "M1961092429",
            "M1973206991"]
 
+# --- Workflow Rules ---
+
 rule all:
     input:
         "results/checked.txt",
         "results/checkm2/quality_report.tsv",
         "results/pangenome/summary_statistics.txt"
+        
+rule preprep:
+    output:
+        temp(".tmp/setup_complete.txt")
+    shell:
+        """
+        ORANGE='\033[38;2;255;140;0m'
+        RESET='\033[0m'
+
+        echo -e "${{ORANGE}}"
+        cat << "EOF"
+  ██████╗  █████╗ ███╗   ██╗      ██████╗ ██╗ ██████╗ ██████╗ ██╗███╗   ██╗
+  ██╔══██╗██╔══██╗████╗  ██║      ██╔══██╗██║██╔═══██╗██╔══██╗██║████╗  ██║
+  ██████╔╝███████║██╔██╗ ██║█████╗██████╔╝██║██║   ██║██████╔╝██║██╔██╗ ██║
+  ██╔═══╝ ██╔══██║██║╚██╗██║╚════╝██╔══██╗██║██║   ██║██╔══██╗██║██║╚██╗██║
+  ██║     ██║  ██║██║ ╚████║      ██████╔╝██║╚██████╔╝██████╔╝██║██║ ╚████║
+  ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝      ╚═════╝ ╚═╝ ╚═════╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝
+EOF
+        echo -e "${{RESET}}"
+        
+# here ADD ADDITIONAL CHECK
+
+        mkdir -p log
+        mkdir -p results
+        mkdir -p .tmp
+        echo "Setup complete." > {output}
+        """
 
 rule check:
     input:
         bins = "data/mags/"
     output:
-        flag = "results/checked.txt",
+        flag = ".tmp/checked.txt",
         files = expand("data/mags/{sample}.fna", sample=SAMPLES)
     run:
         import os
@@ -128,56 +197,139 @@ rule check:
             f.write("All bz2 files have been extracted.\n")
 
 # --- STEP 1: Quality Checking ---
-rule checkm2:
+rule qc:
     input:
         bins = "data/mags/",
-        flag = "results/checked.txt"
+        flag = "log/checked.txt"
     output:
         report = "results/checkm2/quality_report.tsv"
     conda:
         "envs/QC.yml"
+    # exporting db is not working correctly but checkm2 replaced with checkm
     shell:
         """
         export CHECKM2DB={config[checkm2_db_path]}
         checkm2 database --download
         checkm2 predict --threads 8 --input {input.bins} --output-directory results/checkm2
+        # then procede to remove useless junk that has been made by checkm
+        rm -rf results/checkm2/protein_files
+        mv -p results/checkm2/*.log log/
         """
 
 # --- STEP 2: Taxonomy Assignment (GTDB-Tk) ---
-rule gtdbtk:
+rule taxo:
     input:
-        "data/mags/{sample}.fasta"
+        "data/mags/{sample}.fna"
     output:
         "results/taxonomy/{sample}_classification.tsv"
     shell:
-        "gtdbtk classify_wf --genome_dir data/mags/ --out_dir results/taxonomy/ --cpus 8 --extension fasta"
+        # "gtdbtk classify_wf --genome_dir data/mags/ --out_dir results/taxonomy/ --cpus 8 --extension fasta"
+        """
+        phylophlan_metagenomics -i data/mags/ -d results/taxonomy -o results/taxonomy/ --nproc 8
+        """
 
 # --- STEP 3: Annotation (Prokka) ---
-rule prokka:
+
+# rule anno:
+#     input:
+#         "data/mags"
+#     output:
+#         "results/done.txt"
+#         # "results/annotations/{sample}/{sample}.gff"
+#         # "results/annotations/{sample}/{sample}.gff"
+#     # params:
+#     #     outdir = "results/annotations/{sample}"
+#     conda:
+#         "envs/ANNO.yml"
+#     shell:
+#         "./scripts/Anno/marco.sh"
+        # """
+        # prokka --outdir {params.outdir} --prefix {wildcards.sample} {input} --force --centre X --compliant
+        # """
+
+rule new_anno:
     input:
-        fasta = expand("data/mags/{sample}.fna", sample=SAMPLES),
-        flag = "results/checked.txt"
+        expand("data/mags/{sample}.fna", sample=SAMPLES)
     output:
-        gff = "results/annotations/{sample}/{sample}.gff"
-    params:
-        outdir = "results/annotations/{sample}"
+        "results/annotation/{sample}/{sample}.gff"
+    conda:
+        "envs/ANNO.yml"
     shell:
-        "prokka --outdir {params.outdir} --prefix {wildcards.sample} {input.fna} --force"
+        """
+        mkdir -p results/annotaiton
+        prokka --outdir {output} --prefix {wildcard.sample} {input} --centre X --compliant # --force
+        """
 
 # --- STEP 4: Pangenome (Roary) ---
-rule roary:
+# roary is stupid and want to beexecuted directly in the folder, so the options are:
+# - creating soft links in a tmp folder
+# - moving later the results from the /data/ folder to the results
+rule pan:
     input:
-        expand("results/annotations/{sample}/{sample}.gff", sample=SAMPLES)
+        # "results/annotations/{sample}/{sample}.gff"
+        "results/done.txt"
     output:
         "results/pangenome/summary_statistics.txt"
     params:
-        outdir = "results/pangenome"
+        outdir = "results/pangenome",
+        tmpdir = "results/pangenome/tmp"
+    conda:
+        "envs/PAN.yml"
     shell:
+        "./scripts/Pan/marco.sh"
         # Roary needs a folder of GFFs; we move them or point to the directory
-        "roary -f {params.outdir} -e -n -v {input}"
+        
+        # """
+        # mkdir -p {params.tmpdir}
 
-# --- STEP 5: Metadata Association (Python) ---
-rule associate_metadata:
+        # for dir in {input.path}/*/; do
+        #     sample=$(basename $dir)
+        #     ln -sf $(realpath $dir/$sample.gff) {params.tmpdir}/
+        # done
+
+        # roary -f {params.outdir} --mafft -p 8 -e -n -v {params.tmpdir}/*.gff
+
+        # rm -rf {params.tmpdir}
+        # """
+rule new_pan:
+    input:
+        "finished.file.anno.txt"
+    output:
+        "results/pangenome/summary_statistics.txt"
+    # params:
+        # outdir = config[outdir_pan]
+    conda:
+        "envs/PAN.yml"
+    shell:
+        """
+        mkdir -p path
+        
+        for dir in {input}/*/; do
+            sample=$(basename $dir)
+            ln -sf $(realpath $dir/$)"""
+
+
+# --- STEP 5: Phylogeny (PhyloPhlAn) ---
+rule phylo:
+    input:
+        expand("data/mags/{sample}/{sample}.faa", sample=SAMPLES)
+    output:
+        "results/phylogeny/phylo_tree.nwk"
+    params:
+        outdir = config["phylophlan_out_dir"],
+        db = config["phylophlan_db_path"]
+    shell:
+        """
+        # should do a check on the prsence of the 
+        philophlan_write_default_configs.sh
+        
+        phylophlan -i {input} -o {params.outdir} -d {params.db} \
+        --nproc 8 -t a -f supermatrix_aa.cfg --diversity low --accurate 
+        """
+
+# --- STEP 6: Metadata Association (Python\R) ---
+# Probabily i will have to split this rule in multiple steps, but for now i will keep it like this to have a general idea of the workflow;
+rule correlation:
     input:
         pangenome = "results/pangenome/gene_presence_absence.csv",
         metadata = "data/host_metadata.csv"
@@ -191,3 +343,70 @@ rule associate_metadata:
         # Your custom Python logic here to link SGBs to host traits
         result = pan.merge(meta, left_on='Gene', right_on='Host_ID') 
         result.to_csv(output[0])
+
+# rule backup:
+# Saves all the results and logs in a backup folder. prepared to be cleaned and runned again
+rule backup:
+    shell: 
+        """
+        # SAVE CURRENT TIME
+        TIME=$(date +%Y-%m-%d_%H-%M-%S)
+        # CREATE A BACKUP OF THE RESULTS AND LOGS in BACKUP FOLDER
+        mkdir -p backup
+        tar -czvf backup/backup_${{TIME}}.tar.gz results/ log/
+        """
+
+ # ------ DB DOWNLOAD RULES (CHECKM2 AND EGGNOG) ----
+
+rule database:
+    input:
+        check = config.get("checkm2_db_path", "data/checkm2/database/"),
+        egg = ".tmp/egg_db_complete.txt"
+    params:
+        do_egg_db = DO_CORRELATION
+    shell: 
+        """
+        # ----- DB DOWNLOAD -----
+        echo "MIAO"
+        """
+
+rule check_db:
+    conda:
+        "envs/QC.yml"
+    output:
+        check = temp(".tmp/checkm2_db_complete.txt")
+    shell:
+        """
+        mkdir -p {config[checkm2_db_path]}
+        # export CHECKM2DB={config[checkm2_db_path]}
+        checkm2 database --download --path {config[checkm2_db_path]}
+        echo "CheckM2 database download complete." > {output.check}
+        """
+# rule to be fixed
+rule egg_db:
+    conda:
+        "envs/EGG.yml"
+    output: 
+        egg = temp(".tmp/egg_db_complete.txt")
+    shell:
+        """
+        if [ {DO_CORRELATION} = True ]; then
+            echo "EggNOG database download skipped as correlation analysis is not enabled."
+            exit 0
+        fi
+        # download_eggnog_data.py --data_dir {config[eggnog_db_path]} --cpu 8
+        echo "EggNOG database download complete." > {output.egg}
+        """ 
+
+
+
+## Visual Difference
+# ```
+# RULE (static):
+#   Start → Build full DAG → Run A → Run B → Run C → Done
+#           [everything known]
+
+# CHECKPOINT (dynamic):
+#   Start → Build partial DAG → Run A → STOP → Rebuild DAG → Run B → Run C → Done
+#                                        [inspect outputs]
+#  ```
