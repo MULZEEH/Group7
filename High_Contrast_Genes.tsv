@@ -1,0 +1,5 @@
+Gene	Peri_%	Healthy_%	Raw_P_Value	Annotation
+dnaA	80.0	0.0	0.000714455822814956	Chromosomal replication initiator protein DnaA
+yeeO	90.0	20.0	0.005477494641581328	putative FMN/FAD exporter YeeO
+group_651	90.0	20.0	0.005477494641581328	ADP-polyphosphate phosphotransferase
+ridA	90.0	20.0	0.005477494641581328	2-iminobutanoate/2-iminopropanoate deaminase

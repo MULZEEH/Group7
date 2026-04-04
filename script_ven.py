@@ -17,7 +17,7 @@ for f in files:
     # 2. Select the 'Gene' column
     # 3. Drop any empty values (NaN)
     # 4. Convert to a set for Venn math
-    filtered_genes = set(df[df["No. isolates"] == 10]["Gene"].dropna())
+    filtered_genes = set(df[df["No. isolates"] >= 8]["Gene"].dropna())
     
     gene_sets.append(filtered_genes)
 
@@ -27,10 +27,10 @@ print(f"Done! Set sizes: {[len(s) for s in gene_sets]}")
 plt.figure(figsize=(10, 7))
 venn = venn3(
     subsets=gene_sets, 
-    set_labels=('HEALTHY', 'MUCO', 'PERI')
+    set_labels=('HEALTHY', 'MUCOSITIS', 'PERIIMPPLITIS')
 )
 
 
-plt.title("Overlap of Highly Expressed Genes")
+plt.title("Genes Present in Each Condition (> 70%)")
 plt.show()
 

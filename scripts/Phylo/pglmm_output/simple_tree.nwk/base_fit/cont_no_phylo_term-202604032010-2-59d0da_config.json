@@ -4,7 +4,7 @@
   "stan_minor_version" : "38",
   "stan_patch_version" : "0",
   "model_name" : "cont_no_phylo_term_model",
-  "start_datetime" : "2026-04-02 14:56:39 UTC",
+  "start_datetime" : "2026-04-03 18:10:22 UTC",
   "method" : {
     "value" : "sample",
     "sample" : {
@@ -43,20 +43,20 @@
       "num_chains" : 1
     }
   },
-  "id" : 3,
+  "id" : 2,
   "data" : {
-    "file" : "\/tmp\/RtmpaSY9Le\/standata-16784a3ba9ff7.json"
+    "file" : "\/tmp\/Rtmp93m80m\/standata-9fc24ce381dc.json"
   },
-  "init" : "\/tmp\/RtmpaSY9Le\/init-16784af8054d3_3.json",
+  "init" : "\/tmp\/Rtmp93m80m\/init-9fc27dfa91a7_2.json",
   "random" : {
     "seed" : 42
   },
   "output" : {
-    "file" : "\/home\/pupu\/Desktop\/Uni\/Genomics\/Bacterial\/Project\/Group7\/scripts\/Phylo\/pglmm_output\/simple_tree.nwk\/base_fit\/cont_no_phylo_term-202604021656-3-946d9d.csv",
+    "file" : "\/home\/pupu\/Desktop\/Uni\/Genomics\/Bacterial\/Project\/Group7\/scripts\/Phylo\/pglmm_output\/simple_tree.nwk\/base_fit\/cont_no_phylo_term-202604032010-2-59d0da.csv",
     "diagnostic_file" : "",
     "refresh" : 200,
     "sig_figs" : 8,
-    "profile_file" : "\/home\/pupu\/Desktop\/Uni\/Genomics\/Bacterial\/Project\/Group7\/scripts\/Phylo\/pglmm_output\/simple_tree.nwk\/base_fit\/cont_no_phylo_term-profile-202604021656-3-862bc9.csv",
+    "profile_file" : "\/home\/pupu\/Desktop\/Uni\/Genomics\/Bacterial\/Project\/Group7\/scripts\/Phylo\/pglmm_output\/simple_tree.nwk\/base_fit\/cont_no_phylo_term-profile-202604032010-2-4b4c22.csv",
     "save_cmdstan_config" : true
   },
   "num_threads" : 1,

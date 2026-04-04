@@ -3,8 +3,8 @@
   "stan_major_version" : "2",
   "stan_minor_version" : "38",
   "stan_patch_version" : "0",
-  "model_name" : "cont_pglmm_noise_reg_model",
-  "start_datetime" : "2026-04-02 14:56:38 UTC",
+  "model_name" : "cont_no_phylo_term_model",
+  "start_datetime" : "2026-04-03 18:10:22 UTC",
   "method" : {
     "value" : "sample",
     "sample" : {
@@ -43,24 +43,24 @@
       "num_chains" : 1
     }
   },
-  "id" : 4,
+  "id" : 1,
   "data" : {
-    "file" : "\/tmp\/RtmpaSY9Le\/standata-16784a6efc391d.json"
+    "file" : "\/tmp\/Rtmp93m80m\/standata-9fc24ce381dc.json"
   },
-  "init" : "\/tmp\/RtmpaSY9Le\/init-16784a78f93600_4.json",
+  "init" : "\/tmp\/Rtmp93m80m\/init-9fc27dfa91a7_1.json",
   "random" : {
     "seed" : 42
   },
   "output" : {
-    "file" : "\/home\/pupu\/Desktop\/Uni\/Genomics\/Bacterial\/Project\/Group7\/scripts\/Phylo\/pglmm_output\/simple_tree.nwk\/pglmm_fit\/cont_pglmm_noise_reg-202604021656-4-7e88bc.csv",
+    "file" : "\/home\/pupu\/Desktop\/Uni\/Genomics\/Bacterial\/Project\/Group7\/scripts\/Phylo\/pglmm_output\/simple_tree.nwk\/base_fit\/cont_no_phylo_term-202604032010-1-59d0da.csv",
     "diagnostic_file" : "",
     "refresh" : 200,
     "sig_figs" : 8,
-    "profile_file" : "\/home\/pupu\/Desktop\/Uni\/Genomics\/Bacterial\/Project\/Group7\/scripts\/Phylo\/pglmm_output\/simple_tree.nwk\/pglmm_fit\/cont_pglmm_noise_reg-profile-202604021656-4-2c0d3a.csv",
+    "profile_file" : "\/home\/pupu\/Desktop\/Uni\/Genomics\/Bacterial\/Project\/Group7\/scripts\/Phylo\/pglmm_output\/simple_tree.nwk\/base_fit\/cont_no_phylo_term-profile-202604032010-1-4b4c22.csv",
     "save_cmdstan_config" : true
   },
   "num_threads" : 1,
   "mpi_enabled" : false,
   "stanc_version" : "stanc3 v2.38.0",
-  "stancflags" : "--name=cont_pglmm_noise_reg_model"
+  "stancflags" : "--name=cont_no_phylo_term_model"
 }

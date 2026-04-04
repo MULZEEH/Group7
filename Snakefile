@@ -132,7 +132,7 @@ rule preprep:
 EOF
         echo -e "${{RESET}}"
         
-# here ADD ADDITIONAL CHECK
+# here ADD ADDITIONAL CHECK for GITTOKEN and DATABASES (CHECKM2 AND EGGNOG) and other stuff that is needed for the pipeline to run correctly, if not present exit with an error message
 
         mkdir -p log
         mkdir -p results
@@ -199,6 +199,7 @@ rule check:
 # --- STEP 1: Quality Checking ---
 rule qc:
     input:
+        preprap = ".tmp/setup_complete.txt"
         bins = "data/mags/",
         flag = "log/checked.txt"
     output:
@@ -216,9 +217,11 @@ rule qc:
         """
 
 # --- STEP 2: Taxonomy Assignment (Phylophlan) ---
+# currently not written in the correct way
 rule taxo:
     input:
-        "data/mags/"
+        preprap = ".tmp/setup_complete.txt",
+        folder = "data/mags/"
     output:
         "results/taxonomy/taxonomy_report.tsv"
     shell:
@@ -227,10 +230,10 @@ rule taxo:
         """
 
 # --- STEP 3: Annotation (Prokka) ---
-
-rule new_anno:
+rule anno:
     input:
-        expand("data/mags/{sample}.fna", sample=SAMPLES)
+        preprap = ".tmp/setup_complete.txt",    
+        mags = expand("data/mags/{sample}.fna", sample=SAMPLES)
     output:
         "results/annotation/{sample}/{sample}.gff"
     conda:
@@ -238,41 +241,21 @@ rule new_anno:
     shell:
         """
         mkdir -p results/annotaiton
-        prokka --outdir {output} --prefix {wildcard.sample} {input} --centre X --compliant # --force
+        prokka --outdir {output} --prefix {wildcard.sample} {input.mags} --centre X --compliant # --force
+        # eggnog-mapper -i {input.mags} -o {output} --cpu 8 --data_dir {config[eggnog_db_path]} --output_dir results/functional_annotation/ --override
         """
+rule fun_anno:
+    input: 
+    output: 
+    run: 
 
 # --- STEP 4: Pangenome (Roary) ---
 # roary is stupid and want to beexecuted directly in the folder, so the options are:
 # - creating soft links in a tmp folder
 # - moving later the results from the /data/ folder to the results
+
+# currently problems with linking this step with the previous one
 rule pan:
-    input:
-        # "results/annotations/{sample}/{sample}.gff"
-        "results/done.txt"
-    output:
-        "results/pangenome/summary_statistics.txt"
-    params:
-        outdir = "results/pangenome",
-        tmpdir = "results/pangenome/tmp"
-    conda:
-        "envs/PAN.yml"
-    shell:
-        "./scripts/Pan/marco.sh"
-        # Roary needs a folder of GFFs; we move them or point to the directory
-        
-        # """
-        # mkdir -p {params.tmpdir}
-
-        # for dir in {input.path}/*/; do
-        #     sample=$(basename $dir)
-        #     ln -sf $(realpath $dir/$sample.gff) {params.tmpdir}/
-        # done
-
-        # roary -f {params.outdir} --mafft -p 8 -e -n -v {params.tmpdir}/*.gff
-
-        # rm -rf {params.tmpdir}
-        # """
-rule new_pan:
     input:
         "finished.file.anno.txt"
     output:
@@ -287,10 +270,12 @@ rule new_pan:
         
         for dir in {input}/*/; do
             sample=$(basename $dir)
-            ln -sf $(realpath $dir/$)"""
+            ln -sf $(realpath $dir/$)
+        """
 
 
 # --- STEP 5: Phylogeny (PhyloPhlAn) ---
+# not handling database? dont remember how do i download it (has to add in the download rule)
 rule phylo:
     input:
         expand("data/mags/{sample}/{sample}.faa", sample=SAMPLES)
@@ -308,7 +293,7 @@ rule phylo:
         --nproc 8 -t a -f supermatrix_aa.cfg --diversity low --accurate 
         """
 
-# --- STEP 6: Metadata Association (Python\R) ---
+# --- STEP 6: Metadata Association with Phylogeny(Anpan) ---
 # Probabily i will have to split this rule in multiple steps, but for now i will keep it like this to have a general idea of the workflow;
 rule correlation:
     input:
@@ -316,6 +301,8 @@ rule correlation:
         metadata = "data/host_metadata.csv"
     output:
         "results/final_analysis/metadata_joined.csv"
+    conda:
+        "envs/anpan.yml"
     run:
         from importlib_metadata import files
         import pandas as pd

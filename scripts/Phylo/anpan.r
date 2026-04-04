@@ -74,7 +74,8 @@ handlers(global = TRUE)
 
 # Path to your metadata TSV.
 # Required columns: sample_id  +  all covariates  +  the outcome column.
-META_FILE <- "simple_meta_data.tsv"
+META_FILE <- "metadata_with_genes.tsv"
+# META_FILE <- "simple_meta_data.tsv"
 
 # Path to the Newick tree file for a SINGLE MAG/species.
 # Tip labels must match the sample_id values in META_FILE.
@@ -85,8 +86,14 @@ TREE_FILE <- "simple_tree.nwk"
 # Gaussian outcome  → continuous numeric column  (e.g. BMI, Shannon diversity)
 # Logistic outcome  → 0/1 or TRUE/FALSE column   (e.g. disease status)
 OUTCOME <- "study_group"        
+# does not know how many interesting genes i will have so i will retrieve all the column from META_FILE after 'study_group'
+interesting_genes <- colnames(read.csv(META_FILE, sep='\t', nrows=0))
+index_study_group <- which(interesting_genes == "study_group")
+interesting_genes <- interesting_genes[index_study_group + 1: length(interesting_genes)]
+interesting_genes <- interesting_genes[!is.na(interesting_genes)]  # remove any NA columns (if no genes were added)
 # Vector of covariate column names to control for.
-COVARIATES <- c("sex",	"bmi", "age", "smoking_state") 
+COVARIATES <- c("sex",	"bmi", "age", "smoking_state", interesting_genes)  
+# COVARIATES <- c("sex",	"bmi", "age", "smoking_state")  
 
 # Output directory
 OUT_DIR <- "pglmm_output"
@@ -133,6 +140,15 @@ result <- anpan_pglmm(
   seed              = 42,
   refresh           = 200
 )
+# simplest run with defaults:
+# result <- anpan_pglmm(
+#   meta_file         = META_FILE,
+#   tree_file         = TREE_FILE,
+#   outcome           = OUTCOME,
+#   covariates        = COVARIATES,
+#   family            = FAMILY,
+#   out_dir           = OUT_DIR
+# )
 
 
 # ── 3. SUMMARISE RESULTS ─────────────────────────────────────────────────────
