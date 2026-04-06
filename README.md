@@ -91,8 +91,8 @@ snakemake -c 8 correlation --use-conda
 
 Or permanently add it to your `.bashrc` or `.bash_profile`:
 ```bash
-echo 'export GITHUB_TOKEN="your_token_here"' >> ~/.bashrc
-source ~/.bashrc
+variables:
+  GITHUB_PATH: "[your_token_here :) ]"
 ```
 
 **Note:** Only needed if you're running the `correlation` rule. If `correlation: false` in config.yml, you can skip this step.
