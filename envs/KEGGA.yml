@@ -1,0 +1,9 @@
+name: vis_fun_anno
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependancies:
+  - python=3.14
+  - pip:
+      - kegganog  

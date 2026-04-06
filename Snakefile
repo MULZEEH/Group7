@@ -199,7 +199,7 @@ rule check:
 # --- STEP 1: Quality Checking ---
 rule qc:
     input:
-        preprap = ".tmp/setup_complete.txt"
+        preprap = ".tmp/setup_complete.txt",
         bins = "data/mags/",
         flag = "log/checked.txt"
     output:
@@ -244,10 +244,25 @@ rule anno:
         prokka --outdir {output} --prefix {wildcard.sample} {input.mags} --centre X --compliant # --force
         # eggnog-mapper -i {input.mags} -o {output} --cpu 8 --data_dir {config[eggnog_db_path]} --output_dir results/functional_annotation/ --override
         """
-rule fun_anno:
+# rule fun_anno:
+#     input: 
+#     output: 
+#     run: 
+
+rule visual_fun_anno:
     input: 
-    output: 
-    run: 
+        txt = config["kegg_annotations_file"]
+    output:
+        "results/kegg/kegganog_results.tsv"
+    conda:
+        "envs/KEGGA.yml"
+    shell:
+        """
+        echo "Visualizing KEGG annotations with KEGGaNOG..."
+        KEGGaNOG -M -i {input.txt} -o results/kegg --overwrite -g -v &2>1 | tee -a log/kegganog_fun_anno.log
+        echo "done, this is to be updated" > {output}
+        python scripts/Anno/visual.py results/kegg/merged_pathways.tsv results/kegg/
+        """
 
 # --- STEP 4: Pangenome (Roary) ---
 # roary is stupid and want to beexecuted directly in the folder, so the options are:

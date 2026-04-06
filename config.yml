@@ -12,4 +12,5 @@ output_dir: "results"
 mag_input_dir: "data/mags"
 threshold_completeness: 50
 threshold_contamination: 5
+kegg_annotations_file: "results/results_egg/group_egg_protein.txt"
 # ...
