@@ -1,100 +1,334 @@
-# Bioinformatic Analysis of Dental Plaque MAGs
+# PAN-BIOBIN Pipeline: Dental Plaque MAG Analysis
 **Group Project: The "Plaque Gang"**
 
-## 1. Project Overview
-Microbes are ubiquitous and highly diverse, particularly within the human oral cavity. Traditional microbiology was limited by the "cultivation bottleneck"—the fact that most microbes cannot be grown in a lab. This project utilizes modern **metagenomic shotgun sequencing** to bypass this limitation.
+## Project Overview
 
-### The Genomic Workflow
-Our data follows this standard bioinformatics progression:
-**Shotgun Sequencing** $\rightarrow$ **Short Reads** $\rightarrow$ **De-novo Assembly** $\rightarrow$ **Contigs** $\rightarrow$ **Binning** $\rightarrow$ **MAGs (Metagenome-Assembled Genomes)**.
+This pipeline analyzes **30 Metagenome-Assembled Genomes (MAGs)** recovered from dental plaque samples from the PreBiomics BetaProgram. We're characterizing an unknown species-level genome bin (uSGB) and investigating its correlation with peri-implantitis disease states.
 
-We are specifically focusing on **SGBs (Species-level Genome Bins)** defined by MetaPhlAn4, which utilizes a database of 2.1M reference genomes to cluster MAGs into species-level groups based on marker genes.
+### Why This Matters
 
----
+Traditional microbiology couldn't grow most oral microbes in the lab. Using modern metagenomic shotgun sequencing, we can now bypass this "cultivation bottleneck" and study these organisms directly from environmental samples.
 
-## 2. Biological Context: Oral Cavity & Dental Implants
-Our research focuses on the **Peri-implant microbiome**. Peri-implantitis is a disease linked to bacterial plaque that can lead to significant bone loss around dental implants.
+Our workflow follows the standard bioinformatics progression:
+```
+Shotgun Sequencing → Short Reads → De-novo Assembly → Contigs → Binning → MAGs
+```
 
-* **Dataset:** PreBiomics BetaProgram (Plaque and Saliva samples).
-* **Focus:** Plaque datasets from dental implants.
-* **Key Concept:** Biofilms on teeth follow a structural successional layer:
-    * **Early colonizers:** Usually associated with health.
-    * **Intermediate colonizers:** Transition phase.
-    * **Late colonizers:** Often associated with disease states (Peri-implantitis).
-* **The Challenge:** Investigating the correlation between **uSGBs (Unknown Species-Level Genome Bins)** and disease states using log LDA scores.
+We focus on **SGBs (Species-level Genome Bins)** - clusters of MAGs at the species level defined using marker genes and reference databases like GTDB.
 
 ---
 
-## 3. Project Objectives
-Our goal is to characterize a specific SGB consisting of **30 MAGs** recovered from dental plaque.
+## The Technical Pipeline
 
-1.  **Quality Control (QC):** Assess the "cleanliness" (Completeness/Contamination) of the 30 FASTA files.
-2.  **Taxonomic Assignment:** Determine the identity of our MAGs using global databases (GTDB).
-3.  **Functional Annotation:** Predict the metabolic potential and genes of each genome.
-4.  **Pangenome & Phylogeny:** Determine the core vs. accessory genome and visualize evolutionary relationships.
-5.  **Metadata Association:** Correlate microbial data (taxonomy/abundance) with host factors (Age, Sex, Smoking, Disease status).
+| Step | Tool | Input | Output | Why? |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. QC** | CheckM2 | MAGs (FASTA) | Completeness/Contamination % | Ensure data reliability |
+| **2. Taxonomy** | GTDB-Tk / PhyloPhlAn | Clean MAGs (FASTA) | Taxonomic ranks (Genus/Species) | Identify the organism |
+| **3. Annotation** | Prokka | Clean MAGs (FASTA) | Gene labels (GFF) | See metabolic potential |
+| **4. Pangenome** | Roary | Annotation files (GFF) | Gene Presence/Absence Matrix | Find shared vs. unique traits |
+| **5. Phylogeny** | PhyloPhlAn / IQ-TREE 2 | Gene Alignments | Evolutionary Tree (.nwk) | Map evolutionary history |
+| **6. Metadata Association** | Python/R | Results + Host CSV | Statistical Correlations | Link genes to disease status |
 
 ---
 
-## 4. The Technical Pipeline
+## Setup
 
-| Step | Tool | Objective |
+### 1. Prepare Your Data
+
+Put your 30 MAG files in the `data/mags/` folder. Files should be compressed with `.bz2`:
+
+```
+data/mags/
+├── M1076080470.fna.bz2
+├── M1053959057.fna.bz2
+├── M1078114725.fna.bz2
+└── ... (all 30 samples)
+```
+
+The pipeline will automatically extract them.
+
+### 2. Update the Sample List
+
+Edit the `Snakefile` and update the `SAMPLES` list with your actual 30 sample names. Make sure names match your files (without the `.fna.bz2` extension).
+
+### 3. Set Up Configuration
+
+Create a `config.yml` file:
+
+```yaml
+# Database paths
+checkm2_db_path: "data/checkm2/database/"
+eggnog_db_path: "data/eggnog_db/"
+phylophlan_db_path: "data/phylophlan_db/"
+phylophlan_out_dir: "results/phylogeny/"
+kegg_annotations_file: "data/kegg_annotations.txt"
+
+# Options
+backup: false          # Set to true to save backups after finishing
+correlation: true      # Set to true to run metadata correlation with host factors
+plane: false          # Set to true to skip functional annotation
+keep_junk: false      # Set to true to keep temporary files
+```
+
+### 4. Set Up GitHub Token (Required for Metadata Correlation)
+
+The **correlation** rule uses the Anpan tool, which downloads directly from GitHub. You need a personal GitHub token to do this.
+
+**Generate your GitHub token:**
+1. Go to https://github.com/settings/tokens
+2. Click "Generate new token" → "Generate new token (classic)"
+3. Give it a name (e.g., "anpan-pipeline")
+4. Select scope: `repo` (full control of private repositories)
+5. Click "Generate token" and copy it
+
+**Add token to your system:**
+
+Export it as an environment variable before running the pipeline:
+```bash
+export GITHUB_TOKEN="your_token_here"
+snakemake -c 8 correlation --use-conda
+```
+
+Or permanently add it to your `.bashrc` or `.bash_profile`:
+```bash
+echo 'export GITHUB_TOKEN="your_token_here"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Note:** Only needed if you're running the `correlation` rule. If `correlation: false` in config.yml, you can skip this step.
+
+### 5. Install Dependencies
+
+All dependencies are in conda environments stored in the `envs/` folder:
+- `envs/QC.yml` - Quality control (CheckM2)
+- `envs/ANNO.yml` - Annotation (Prokka)
+- `envs/PAN.yml` - Pangenome (Roary)
+- `envs/EGG.yml` - EggNOG functional annotation
+- `envs/KEGGA.yml` - KEGG pathway visualization
+- `envs/anpan.yml` - Metadata correlation analysis
+
+### 6. Add Metadata File
+
+Place your host metadata CSV in `data/host_metadata.csv` with columns like:
+- Sample ID
+- Age
+- Sex
+- Smoking status
+- Disease status (peri-implantitis yes/no)
+
+This file is used by the metadata correlation step to link genes with host factors.
+
+---
+
+## Running the Pipeline
+
+### Basic Run
+
+```bash
+snakemake -c 8 --use-conda
+```
+
+The `-c 8` uses 8 cores. Adjust based on your computer.
+
+### Run Specific Steps
+
+Quality control only:
+```bash
+snakemake -c 8 qc --use-conda
+```
+
+Taxonomy assignment only:
+```bash
+snakemake -c 8 taxo --use-conda
+```
+
+Annotation only:
+```bash
+snakemake -c 8 anno --use-conda
+```
+
+Pangenome analysis only:
+```bash
+snakemake -c 8 pan --use-conda
+```
+
+Phylogeny only:
+```bash
+snakemake -c 8 phylo --use-conda
+```
+
+Metadata correlation only (requires completed pangenome analysis):
+```bash
+snakemake -c 8 correlation --use-conda
+```
+
+---
+
+## Additional Commands
+
+### Download Required Databases
+
+Before your first run, download CheckM2 and EggNOG databases:
+
+```bash
+snakemake -c 8 check_db --use-conda
+snakemake -c 8 egg_db --use-conda
+```
+
+Or download both at once:
+```bash
+snakemake -c 8 database --use-conda
+```
+
+### Create a Backup
+
+Save all results and logs to a backup folder (useful before cleaning):
+
+```bash
+snakemake -c 8 backup
+```
+
+Creates a compressed file with today's date.
+
+### Visualize the Pipeline
+
+See what steps will run before executing:
+
+```bash
+snakemake --dag | dot -Tsvg > pipeline_dag.svg
+```
+
+This generates a diagram of the workflow.
+
+### Dry Run
+
+Check what commands will execute without actually running them:
+
+```bash
+snakemake -c 8 --dry-run --use-conda
+```
+
+### Verbose Output
+
+See detailed progress:
+
+```bash
+snakemake -c 8 --use-conda -v
+```
+
+---
+
+## Output Files
+
+After the pipeline finishes, results are organized by step:
+
+- **results/checkm2/** - QC reports (completeness, contamination %)
+- **results/taxonomy/** - Taxonomic assignments for each MAG
+- **results/annotation/** - Gene predictions and annotations (GFF format)
+- **results/pangenome/** - Gene presence/absence matrix and core genome
+- **results/phylogeny/** - Evolutionary tree (phylo_tree.nwk) and alignments
+- **results/final_analysis/** - Metadata correlation results (if enabled)
+- **results/kegg/** - KEGG pathway visualizations (if enabled)
+- **log/** - All pipeline log files
+
+---
+
+## Interpreting Results
+
+### Quality Control
+Completeness ≥ 90% and Contamination ≤ 5% indicates a high-quality MAG suitable for downstream analysis.
+
+### Taxonomy
+GTDB assigns standardized taxonomic ranks. This tells you what organism each MAG is.
+
+### Pangenome
+The core genome = genes present in ALL 30 MAGs (essential genes).
+The accessory genome = genes in some but not all MAGs (variable genes).
+This reveals what traits are shared vs. unique across your SGB.
+
+### Phylogeny
+The .nwk tree file shows evolutionary relationships. You can visualize it in tools like FigTree or iTOL to see how your 30 MAGs cluster.
+
+### Metadata Correlation
+Links microbial features (taxonomy, gene presence, abundance) to host factors (age, sex, smoking, disease status). This reveals which genes or traits are associated with peri-implantitis.
+
+---
+
+## Troubleshooting
+
+### "Missing samples" Error
+
+Check that:
+1. File names in `data/mags/` match the `SAMPLES` list (without `.fna.bz2`)
+2. All 30 files are present
+3. No extra files are in the folder
+
+### "Database not found" Error
+
+Run database download first:
+```bash
+snakemake -c 8 check_db --use-conda
+```
+
+### Pipeline is Slow
+
+- Reduce core count: `snakemake -c 4` uses 4 cores instead of 8
+- Skip functional annotation (if not needed): set `plane: true` in config.yml
+- Run steps in parallel on different computers
+
+### Restart After Failure
+
+```bash
+snakemake -c 8 --use-conda --rerun-incomplete
+```
+
+---
+
+## Configuration Options
+
+In `config.yml`, you can control pipeline behavior:
+
+| Option | Default | Effect |
 | :--- | :--- | :--- |
-| **0. Pre-processing** | `Bowtie2` | **Human Read Removal:** Filtering host DNA before analysis. |
-| **1. QC** | `CheckM2` | Assess **Completeness** and **Contamination**. |
-| **2. Taxonomy** | `GTDB-Tk` / `MetaPhlAn` | Assign a name to the MAG based on the Genome Taxonomy Database. |
-| **3. Annotation** | `Bakta` / `Prokka` | Identify genes and metabolic pathways (GFF/GBK output). |
-| **4. Pangenome** | `Roary` | Identify the **Core** vs. **Accessory** genome. |
-| **5. Phylogeny** | `PhyloPhlAn``IQ-TREE 2` | Construct a high-resolution evolutionary tree. |
-| **6. Statistics** | `python` / `R` | Perform Linear Regression/ANOVA to link metadata to microbial features. |
-
-## Pipeline Summary
-
-| Step | What this needs | What this gives us | Why? |
-| :--- | :--- | :--- | :--- |
-| **1. QC** | MAGs (FASTA) | Completeness/Contamination % | To ensure data reliability. |
-| **2. Taxonomy** | Clean MAGs (FASTA) | Taxonomic ranks (Genus/Species) | To identify the organism. |
-| **3. Annotation** | Clean MAGs (FASTA) | Gene labels (GFF/GBK) | To see metabolic potential. |
-| **4. Pangenome** | Annotation files (GFF) | Gene Presence/Absence Matrix | To find shared vs. unique traits. |
-| **5. Phylogeny** | Gene Alignments | Evolutionary Tree (.nwk) | To map evolutionary history. |
-| **6. Metadata** | Results + Host CSV | Statistical Correlations | To link genes to the environment. |
+| `backup: true` | false | Automatically save results after finishing |
+| `correlation: true` | false | Include metadata correlation analysis (links genes to disease status) |
+| `plane: true` | false | Skip functional annotation (faster, less disk space) |
+| `keep_junk: true` | false | Don't delete temporary files (uses more disk space) |
 
 ---
 
-## 5. Administrative Details
-* **Deliverables:** Written Report (~2000 words) + 8-minute Presentation (5 slides).
-* **Deadline 1:** April 7th (Midnight) - Final Written Report.
-* **Deadline 2:** April 8th (15:30) - Email submission to the 3 instructors.
+## Biological Context: Why This Matters
+
+**Peri-implantitis** is inflammation around dental implants caused by pathogenic biofilms. Understanding which microbes and genes are associated with disease is crucial for:
+- Better diagnosis
+- Targeted antimicrobial strategies
+- Predicting implant success/failure
+
+Biofilms have a successional structure:
+- **Early colonizers** → Usually associated with health
+- **Intermediate colonizers** → Transition phase
+- **Late colonizers** → Often associated with disease
+
+By analyzing your 30 MAGs and correlating them with patient metadata (age, smoking, disease status), you can identify which genes or taxa are risk factors for peri-implantitis.
 
 ---
 
-## 6. Internal Q&A (Doubts)
-* **Why QC on Fasta?** Even after assembly, a MAG might be "dirty" (containing DNA from multiple species) or "incomplete." We must verify its quality before trusting pangenome results.
-* **Removing Human DNA?** Yes. In oral samples, human DNA can dominate. Removing it ensures we are analyzing microbial signals, not host contamination.
-* **How can I have 1 MAG per sample?** Binning algorithms group contigs belonging to one species into one "bin." This MAG represents the specific strain of that species found in that specific patient.
-* **Metadata Correlation:** We use **MaAsLin2** to see if the abundance of specific genes is significantly correlated with "Smoking" or "Peri-implantitis" while adjusting for "Age" and "Sex."
+## File Format Notes
+
+- Input: MAGs must be `.fna.bz2` format (automatically extracted)
+- Annotation output: GFF (General Feature Format)
+- Phylogeny output: NWK (Newick tree format) - visualizable in FigTree, iTOL
+- Pangenome output: CSV gene presence/absence matrix
+- Metadata output: TSV/CSV files for statistical analysis
 
 ---
 
-## 7. Task Allocation
+## Next Steps After Running
 
-### Fil
-* QC Verification (CheckM2)
-* Taxonomy (MetaPhlAn)
-* Pangenome (Roary)
-* Phylogeny (PhyloPhlAn)
-
-### Marco
-* Genome Annotation (Bakta/Prokka)
-* Taxonomy testing (PhyloPhlAn)
-* Phylogeny (Tree building)
-
-### Shared
-* Metadata correlation analysis (MaAsLin2/R)
-* Report writing and slide preparation
-
-### Dialister Invisus Information and Idea
-* anaerobic
-* opportunistic pathogen 
-* question to be asked is, does the pangenome change dependantly of the status of the patient? 2988 H, 3016 M, 2830 P.
-* Marker to be answered in the question
+1. **Review QC:** Check completeness/contamination of your 30 MAGs
+2. **Examine Taxonomy:** Identify what organisms you have
+3. **Analyze Pangenome:** See what's core vs. accessory
+4. **Visualize Tree:** Look at evolutionary relationships
+5. **Correlate with Metadata:** Identify genes/taxa linked to disease status
+6. **Write Report:** Synthesize findings into 2000-word report
+7. **Create Presentation:** Summarize key findings in 5 slides
