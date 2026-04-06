@@ -33,7 +33,7 @@ cd "$TEMP_DIR" || exit
 echo "Running Roary..."
 # -f: Output directory
 # -e: Create a multi-FASTA alignment of core genes
-roary -e --mafft -cd 80 -p 4 -f "$OUTPUT_DIR" *.gff
+roary -e --mafft -r -cd 90 -p 4 -f "$OUTPUT_DIR" *.gff
 
 cd ..
 
