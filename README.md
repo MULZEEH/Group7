@@ -89,7 +89,7 @@ export GITHUB_TOKEN="your_token_here"
 snakemake -c 8 correlation --use-conda
 ```
 
-Or permanently add it to your `.bashrc` or `.bash_profile`:
+Or permanently add it to your anpan envioronemtn in envs/anpan.yml (EOF):
 ```bash
 variables:
   GITHUB_PATH: "[your_token_here :) ]"
