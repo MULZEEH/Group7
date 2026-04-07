@@ -1,10 +1,48 @@
 # Configuration file for the bacterial genomics pipeline
 
 # CheckM2 database path
-checkm2_db_path: "/data/checkm2/database"
-# threads: 8
-# output_dir: "results"
-# mag_input_dir: "/data/mags"
-# threshold_completeness: 95
-# threshold_contamination: 5
+# checkm2_db_path: "/data/databases/checkm2" # do the same for phylophlan
+checkm2_db_path: "/home/filippo/Documents/databases/checkm2/CheckM2_database/uniref100.KO.1.dmnd" # i think i wont haveany more data in checkm2 as in the other tools
+eggnog_db_path: "data/eggNOG/database"
+phylophlan_db_path: "data/phylophlan/database"
+phylophlan_out_dir: "results/phylogeny"
+prokka_out_dir: "results/annotations"
+threads: 4
+output_dir: "results"
+mag_input_dir: "SGB5825/mags/"
+threshold_completeness: 50
+threshold_contamination: 5
 # ...
+
+# List of the names of the FASTA files to analyse (MAG samples)
+# samples:
+#   - "M1076080470"
+#   - "M1053959057"
+#   - "M1078114725"
+#   - "M1230650551"
+#   - "M1245365434"
+#   - "M1305644168"
+#   - "M1319770895"
+#   - "M1338737711"
+#   - "M1366869580"
+#   - "M1377790479"
+#   - "M1468428565"
+#   - "M1574952059"
+#   - "M1588242869"
+#   - "M1615715501"
+#   - "M1618962711"
+#   - "M1629152784"
+#   - "M1659720332"
+#   - "M1685111908"
+#   - "M1694502688"
+#   - "M1713418412"
+#   - "M1812631083"
+#   - "M1865579949"
+#   - "M1865732633"
+#   - "M1872771052"
+#   - "M1891500794"
+#   - "M1928604994"
+#   - "M1934704281"
+#   - "M1949040058"
+#   - "M1961092429"
+#   - "M1973206991"

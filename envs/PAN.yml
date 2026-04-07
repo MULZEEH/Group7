@@ -1,0 +1,9 @@
+name: PAN-environment
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+dependencies:
+  - roary
+  - r-ggplot2
+  - perl-file-find-rule

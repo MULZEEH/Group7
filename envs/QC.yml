@@ -1,3 +1,4 @@
+# to update for the checkm implementation not m2
 name: QC-environment
 channels:
   - conda-forge

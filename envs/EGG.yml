@@ -1,0 +1,14 @@
+name: egg_environment
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+dependancies:
+  - python=3.11
+  - eggnog-mapper
+  - ruamel.yaml
+  - httpx
+  - psutil
+  # need this version of python to work
+  - pip:
+    - kegganog
