@@ -72,6 +72,7 @@ onerror:
         os.remove(".tmp/setup_complete.txt")
     print("Workflow failed. Cleanup complete.")
 
+GROUPS = ["mucositis", "periimplantitis", "healthy", "smoker", "non-smoker", "ex-smoker"]
 
 # Define MAG samples (IF THE INPUT DATA IS CHANGED THIS LIST NEEDS TO BE UPDATED) -> could be also automitized but for now kept like this to insert some awereness of the user on the matter of data input
 SAMPLES = ["M1076080470",
@@ -109,9 +110,10 @@ SAMPLES = ["M1076080470",
 
 rule all:
     input:
-        "results/checked.txt",
+        # "results/checked.txt",
         "results/checkm2/quality_report.tsv",
-        "results/pangenome/summary_statistics.txt"
+        # "results/pangenome/summary_statistics.txt",
+        # expand("results/{group}/my_annotation.emapper.annotations", group=GROUPS)
         
 rule preprep:
     output:
@@ -209,11 +211,13 @@ rule qc:
     # exporting db is not working correctly but checkm2 replaced with checkm
     shell:
         """
-        export CHECKM2DB={config[checkm2_db_path]}
-        checkm2 database --download
-        checkm2 predict --threads 8 --input {input.bins} --output-directory results/checkm2
+        # export CHECKM2DB={config[checkm2_db_path]}
+        # checkm2 database --download
+        checkm2 predict --threads 10 --input {input.bins} --output-directory results/checkm2 --force 
         # then procede to remove useless junk that has been made by checkm
-        mv -p results/checkm2/*.log log/
+        # mkdir -p log/
+        mv results/checkm2/*.log log/
+        python scripts/Anno/create_links.py {config[metadata_file]} both
         """
 
 # --- STEP 2: Taxonomy Assignment (Phylophlan) ---
@@ -236,21 +240,41 @@ rule anno:
         mags = expand("data/mags/{sample}.fna", sample=SAMPLES)
     output:
         "results/annotation/{sample}/{sample}.gff"
+    params:
+        outdir = "tmp"
     conda:
         "envs/ANNO.yml"
     shell:
         """
         mkdir -p results/annotaiton
         prokka --outdir {output} --prefix {wildcard.sample} {input.mags} --centre X --compliant # --force
-        # eggnog-mapper -i {input.mags} -o {output} --cpu 8 --data_dir {config[eggnog_db_path]} --output_dir results/functional_annotation/ --override
         """
-# rule fun_anno:
-#     input: 
-#     output: 
-#     run: 
+
+rule fun_anno:
+    input:
+        preprap = ".tmp/setup_complete.txt",
+        mags = "tmp/{group}/tot.faa"  # This uses the files you just created
+    output:
+        annot = "results/{group}/my_annotation.emapper.annotations"
+    params:
+        db = config["eggnog_db_path"],
+        out_prefix = "my_annotation",
+        out_dir = "results/{group}/"
+    threads: 8
+    conda: 
+        "envs/FUN.yml"
+    shell:
+        """
+        mkdir -p {params.out_dir}
+        which emapper.py
+        emapper.py -i {input.mags} --itype proteins -o {params.out_prefix} \
+        --output_dir {params.out_dir} --data_dir {params.db} --cpu {threads}
+        mkdir -p tmp.
+        """
 
 rule visual_fun_anno:
     input: 
+        preprap = ".tmp/setup_complete.txt",
         txt = config["kegg_annotations_file"]
     output:
         "results/kegg/kegganog_results.tsv"
@@ -272,7 +296,8 @@ rule visual_fun_anno:
 # currently problems with linking this step with the previous one
 rule pan:
     input:
-        "finished.file.anno.txt"
+        preprap = ".tmp/setup_complete.txt",
+        end = "finished.file.anno.txt"
     output:
         "results/pangenome/summary_statistics.txt"
     # params:
@@ -368,7 +393,7 @@ rule check_db:
 # rule to be fixed
 rule egg_db:
     conda:
-        "envs/EGG.yml"
+        "envs/FUN.yml"
     output: 
         egg = temp(".tmp/egg_db_complete.txt")
     shell:
@@ -377,7 +402,7 @@ rule egg_db:
             echo "EggNOG database download skipped as correlation analysis is not enabled."
             exit 0
         fi
-        # download_eggnog_data.py --data_dir {config[eggnog_db_path]} --cpu 8
+        download_eggnog_data.py --data_dir {config[eggnog_db_path]} --cpu 8
         echo "EggNOG database download complete." > {output.egg}
         """ 
 

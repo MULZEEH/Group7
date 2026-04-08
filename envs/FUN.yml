@@ -1,9 +1,9 @@
-name: egg_environment
+name: fun_anno_env
 channels:
   - conda-forge
   - defaults
   - bioconda
-dependancies:
+dependencies:
   - python=3.11
   - eggnog-mapper
   - ruamel.yaml
@@ -12,3 +12,4 @@ dependancies:
   # need this version of python to work
   - pip:
     - kegganog
+

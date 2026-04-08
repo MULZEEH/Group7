@@ -74,8 +74,8 @@ handlers(global = TRUE)
 
 # Path to your metadata TSV.
 # Required columns: sample_id  +  all covariates  +  the outcome column.
-# META_FILE <- "metadata_with_genes.tsv"
-META_FILE <- "simple_meta_data.tsv"
+META_FILE <- "metadata_with_genes.tsv"
+# META_FILE <- "simple_meta_data.tsv"
 
 # Path to the Newick tree file for a SINGLE MAG/species.
 # Tip labels must match the sample_id values in META_FILE.
@@ -93,8 +93,8 @@ interesting_genes <- interesting_genes[index_study_group + 1: length(interesting
 interesting_genes <- interesting_genes[!is.na(interesting_genes)]  # remove any NA columns (if no genes were added)
 # Vector of covariate column names to control for.
 # COVARIATES <- c("sex",	"bmi", "age", "smoking_state", interesting_genes)  
-COVARIATES <- c("sex",	"bmi", "age", "smoking_state")  
-COVARIATES <- c("sex",	"bmi",  "smoking_state", "age")  
+# COVARIATES <- c("sex",	"bmi", "age", "smoking_state")  
+# COVARIATES <- c("sex",	"bmi",  "smoking_state", "age")  
 COVARIATES <- c( "smoking_state","sex",	"bmi", "age")  
 
 # Output directory

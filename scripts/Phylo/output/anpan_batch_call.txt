@@ -1,0 +1,10 @@
+anpan_batch(bug_dir = BUG_DIR,
+            meta_file = META_FILE,
+            out_dir = "output",
+            model_type = "fastglm",
+            covariates = COVARIATES,
+            outcome = OUTCOME,
+            filtering_method = "kmeans",
+            save_filter_stats = TRUE,
+            plot_ext = "pdf")
+

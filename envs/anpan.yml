@@ -71,4 +71,4 @@ dependencies:
 #    Rscript -e "remotes::install_github('biobakery/anpan', build_vignettes = TRUE)"
 # ─────────────────────────────────────────────────────────────────────────────
 variables:
-  GITHUB_PATH: ""
+  GITHUB_PATH: 

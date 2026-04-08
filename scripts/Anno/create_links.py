@@ -96,12 +96,29 @@ if __name__ == "__main__":
             # Move a file from source to destination
             # This works for moving to a new folder OR renaming the file
             
-            for i in range(0,3):
+            # HERE THERE IS HARDCODED PATHS
+            for i in range(0, 3):
                 print(f"creo {group_types_label[i]}")
-                os.system(f"mkdir -p results/checkm2/protein_files/{group_types_label[i]}")
-                for h in group_types[i]:
-                    shutil.copy(f"results/checkm2/protein_files/{h}.faa", f"results/checkm2/protein_files/{group_types_label[i]}/{h}.faa")
-            
+                
+                # 1. Create the directory
+                os.system(f"mkdir -p tmp/{group_types_label[i]}")
+                
+                # 2. Define the path for the total file
+                tot_file_path = f"tmp/{group_types_label[i]}/tot.faa"
+                
+                # 3. Open the 'tot' file in write mode ('w') first to ensure it's empty 
+                # for this specific group, then use append mode ('a') inside the loop
+                with open(tot_file_path, "w") as tot_file:
+                    for h in group_types[i]:
+                        source_path = f"results/checkm2/protein_files/{h}.faa"
+                        
+                        # Check if source file exists to avoid errors
+                        if os.path.exists(source_path):
+                            with open(source_path, "r") as source_file:
+                                # Read the content of the individual protein file and write to tot
+                                tot_file.write(source_file.read())
+                                # Optional: ensure there is a newline between files
+                                tot_file.write("\n")
         # Execution on SMOKING STATE 
         if based_on_states:
 
@@ -111,13 +128,29 @@ if __name__ == "__main__":
             smoker = get_ids_by_smoking_state(path, "smoker")
             group_types = [non_smoker,ex_smoker, smoker]
             
-                
-            for i in range(0,3):
+            
+            for i in range(0, 3):
                 print(f"creo {group_types_label[i]}")
-                os.system(f"mkdir -p results/checkm2/protein_files/{group_types_label[i]}")
-                for h in group_types[i]:
-                    shutil.copy(f"results/checkm2/protein_files/{h}.faa", f"results/checkm2/protein_files/{group_types_label[i]}/{h}.faa")
-
+                
+                # 1. Create the directory
+                os.system(f"mkdir -p tmp/{group_types_label[i]}")
+                
+                # 2. Define the path for the total file
+                tot_file_path = f"tmp/{group_types_label[i]}/tot.faa"
+                
+                # 3. Open the 'tot' file in write mode ('w') first to ensure it's empty 
+                # for this specific group, then use append mode ('a') inside the loop
+                with open(tot_file_path, "w") as tot_file:
+                    for h in group_types[i]:
+                        source_path = f"results/checkm2/protein_files/{h}.faa"
+                        
+                        # Check if source file exists to avoid errors
+                        if os.path.exists(source_path):
+                            with open(source_path, "r") as source_file:
+                                # Read the content of the individual protein file and write to tot
+                                tot_file.write(source_file.read())
+                                # Optional: ensure there is a newline between files
+                                tot_file.write("\n")
             # shutil.move("old_folder/data.tsv", "new_folder/data.tsv")
     else:
         print("Please provide a file path. Usage: python script.py your_file.tsv")

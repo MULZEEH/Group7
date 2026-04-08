@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: bash concat_faa.sh <folder_with_faa_files>
+# Usage: bash concat_faa.sh <folder_with_faa_files> <name_of_output_file_without_extension>
 # Output: tot.faa created inside the target folder
 
 if [ "$#" -ne 1 ]; then
@@ -10,13 +10,14 @@ if [ "$#" -ne 1 ]; then
 fi
 
 FOLDER="$1"
+FILENAME="$2"
 
 if [ ! -d "$FOLDER" ]; then
     echo "ERROR: folder not found: $FOLDER"
     exit 1
 fi
 
-OUTPUT="$FOLDER/tot.faa"
+OUTPUT="$FOLDER/$FILENAME.faa"
 
 # Check if any .faa files exist (excluding tot.faa itself)
 found=0
